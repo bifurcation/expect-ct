@@ -10,10 +10,10 @@ pi: [toc, sortrefs, symrefs]
 
 author:
  -
-    ins: J. Smith
-    name: John Smith
-    org: Yoyodyne
-    email: jsmith@yoyodyne.com
+    ins: E. Stark
+    name: Emily Stark
+    org: Google
+    email: estark@google.com
 
 --- abstract
 
