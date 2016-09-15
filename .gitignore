@@ -10,3 +10,5 @@ venv/
 issues.json
 lib
 draft-tbd-expect-ct.md
+lib
+draft-stark-expect-ct.md

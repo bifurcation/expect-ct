@@ -1,9 +1,9 @@
-# 
+# This is Where a Title Will Be Someday
 
-This is the working area for the Individual internet-draft, "".
+This is the working area for the Individual internet-draft, "This is Where a Title Will Be Someday".
 
 * [Editor's copy](https://bifurcation.github.io/expect-ct/)
-* [Individual Draft] (https://tools.ietf.org/html/draft-tbd-expect-ct)
+* [Individual Draft] (https://tools.ietf.org/html/draft-stark-expect-ct)
 
 
 ## Building the Draft
