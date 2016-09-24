@@ -132,15 +132,197 @@ directive is not present and not cache the header.
 
 ## Server Processing Model
 
+This section describes the processing model that Expect-CT hosts implement.  The
+model has 2 parts: (1) the processing rules for HTTP request messages received
+over a secure transport (e.g., authenticated, non-anonymous TLS); and (2) the
+processing rules for HTTP request messages received over non-secure transports,
+such as TCP.
+
+### HTTP-over-Secure-Transport Request Type
+
+When replying to an HTTP request that was conveyed over a secure transport, an
+Expect-CT host SHOULD include in its response exactly one Expect-CT header
+field. The header field MUST satisfy the grammar specified in
+{{response-header-field-syntax}}.
+
+Establishing a given host as an Expect-CT host, in the context of a given UA,
+is accomplished as follows:
+
+1.  Over the HTTP protocol running over secure transport, by correctly returning
+    (per this specification) at least one valid Expect-CT header field to the
+    UA.
+
+2.  Through other mechanisms, such as a client-side preloaded Expect-CT host list.
+
+### HTTP Request Type
+
+Expect-CT hosts SHOULD NOT include the Expect-CT header field in HTTP responses
+conveyed over non-secure transport.  UAs MUST ignore any Expect-CT header
+received in an HTTP response conveyed over non-secure transport.
+
 ## User Agent Processing Model
+
+The UA processing model relies on parsing domain names.  Note that
+internationalized domain names SHALL be canonicalized according to
+the scheme in Section 10 of {{!RFC6797}}.
+
+### Expect-CT Header Field Processing
+
+If the UA receives, over a secure transport, an HTTP response that includes an
+Expect-CT header field conforming to the grammar specified in
+{{response-header-field-syntax}}, the UA MUST evaluate the connection on which
+the header was received for compliance with the UA's CT policy, and then process
+the Expect-CT header field as follows.
+
+If the header field includes a `report-uri` directive, and the connection
+does not comply with the UA's CT policy, then the UA MUST send a report to the
+specified `report-uri` as specified in {{reporting-expect-ct-failure}}.
+
+If the header field contains the `enforce` directive and the connection complies with the UA's CT policy, then the UA MUST either:
+
+- Note the host as an Expect-CT host if it is not already so noted (see
+  {{noting-expect-ct}}), or
+- Update the UA's cached information for the Expect-CT host if the `max-age` or
+  `report-uri` header field value directives convey information different from
+  that already maintained by the UA. If the `max-age` directive has a value of
+  0, the UA MUST remove its cached Expect-CT information if the host was
+  previously noted as an Expect-CT host, and MUST NOT note this host as an
+  Expect-CT host if it is not already noted.
+
+If the header field contains the `enforce` directive and the connection does not
+comply with the UA's CT policy, then the UA MUST NOT note this host as an
+Expect-CT host.
+
+If a UA receives more than one Expect-CT header field in an HTTP response
+message over secure transport, then the UA MUST process only the first Expect-CT
+header field.
+
+The UA MUST ignore any Expect-CT header field not conforming to the grammar
+specified in {{response-header-field-syntax}}.
+
+### Noting an Expect-CT Host - Storage Model
+
+The "effective Expect-CT date" of an Expect-CT host is the time that the UA
+observed a valid Expect-CT header for the host. The "effective expiration date"
+of a known Expect-CT host is the effective Expect-CT date plus the max-age. An
+Expect-CT host is "expired" if the effective expiration date refers to a date in
+the past. The UA MUST ignore any expired Expect-CT hosts in its cache.
+
+Expect-CT hosts are identified only by domain names, and never IP addresses. If
+the substring matching the host production from the Request-URI (of the message
+to which the host responded) syntactically matches the IP-literal or IPv4address
+productions from Section 3.2.2 of {{!RFC3986}}, then the UA MUST NOT note this
+host as an Expect-CT host.
+
+Otherwise, if the substring does not congruently match an existing Expect-CT
+host's domain name, per the matching procedure specified in Section 8.2 of
+{{!RFC6797}}, then the UA MUST add this host to the Expect-CT host cache. The UA
+caches:
+
+- the Expect-CT host's domain name,
+- the effective expiration date, or enough information to calculate it (the
+  effective Expect-CT date and the value of the `max-age` directive),
+- the value of the `report-uri` directive, if present.
+
+If any other metadata from optional or future Expect-CT header directives are
+present in the Expect-CT header, and the UA understands them, the UA MAY note
+them as well.
+
+UAs MAY set an upper limit on the value of max-age, so that UAs that have noted
+erroneous Expect-CT hosts (whether by accident or due to attack) have some
+chance of recovering over time.  If the server sets a max-age greater than the
+UA's upper limit, the UA MAY behave as if the server set the max-age to the UA's
+upper limit.  For example, if the UA caps max-age at 5,184,000 seconds (60
+days), and a Pinned Host sets a max- age directive of 90 days in its Expect-CT
+header, the UA MAY behave as if the max-age were effectively 60 days. (One way
+to achieve this behavior is for the UA to simply store a value of 60 days
+instead of the 90-day value provided by the Expect-CT host.)
+
+The UA MUST NOT cache information from an Expect-CT header that does not include
+the `enforce` directive. (Report-only headers are useful only at the time of
+receipt and processing.)
+
+### HTTP-Equiv \<meta\> Element Attribute
+
+UAs MUST NOT heed `http-equiv="Expect-CT"` attribute settings on `<meta>`
+elements {{!W3C.REC-html401-19991224}} in received content.
 
 ## Noting Expect-CT
 
+Upon receipt of the Expect-CT response header field containing an `enforce`
+directive, the UA notes the host as an Expect-CT host, storing the host'st
+domain name and its associated Expect-CT directives in non-volatile storage. The
+domain name and associated Expect-CT directives are collectively known as
+"Expect-CT metadata".
+
+The UA MUST note a host as an Expect-CT host if and only if it received the
+Expect-CT response header field over an error-free TLS connection, inluding the
+validation added in {{expect-ct-compliance}}, that included the `enforce`
+directive.
+
+To note a host as an Expect-CT host, the UA MUST set its Expect-CT metadata to
+the effectie expiration date and report-uri (if any) given in the most recently
+received valid Expect-CT header.
+
+For forward compatibility, the UA MUST ignore any unrecognized Expect-CT header
+directives, while still processing those directives it does
+recognize. {{response-header-field-syntax} specifies the directives `enforce`,
+`max-age`, and `report-uri`, but future specifications and implementations might
+use additional directives.
+
 ## Evaluating Expect-CT Connections for CT Compliance {#expect-ct-compliance}
+
+When a UA connects to an Expect-CT host using a TLS connection, if the TLS
+connection has errors, the UA MUST terminate the connection without allowing the
+user to proceed anyway. (This behavior is the same as that required by
+{{!RFC6797}}.)
+
+If the connection has no errors, then the UA will apply an additional
+correctness check: compliance with a CT policy. A UA should evaluate compliance
+with its CT policy whenever connecting to an Expect-CT host, as soon as
+possible. It is acceptable to skip this CT compliance check for some hosts
+according to local policy. For example, a UA may disable CT compliance checks
+for hosts whose validated certificate chain terminates at a user-defined trust
+anchor, rather than a trust anchor built-in to the UA (or underlying platform).
+
+SOMETHING SOMETHING about the UA getting to choose the policy based on the
+SCTs. Example policies in an appendix? Something advising UAs to publish their
+policies somewhere? Something about using reporting to discover policy changes?
+
+A UA that has previously noted a host as an Expect-CT host MUST evaluate
+evaluate CT compliance when setting up the TLS session, before beginning an HTTP
+conversation over the TLS channel.
+
+If the UA does not evaluate CT compliance, e.g. because the user has elected to
+disable it, or because a presented certificate chain chains up to a user-defined
+trust anchor, UAs SHOULD NOT send Expect-CT reports.
+
+# Interactions with Preloaded Pin Lists
 
 # Reporting Expect-CT Failure
 
+When the UA receives an Expect-CT header with a `report-uri` directive that does
+not comply with the UA's CT policy, or when the UA connects to a noted Expect-CT
+host that does not comply with the CT policy, the UA SHOULD report Expect-CT
+failures to the configured `report-uri`. The UA does this by POSTing a JSON
+{{!RFC7159}} message to the URI. The JSON message takes this form:
+
+~~~
+{
+FILL IN REPORT FORMAT HERE
+}
+~~~
+
+Whitespace outside of quoted strings is not significant. The key/value pairs may
+appear in any order, but each MUST appear only once.
+
+EXPLAIN report fields here
+
 # Security Considerations
+
+## Maximum max-age
+
+1 year?
 
 # Privacy Considerations
 
