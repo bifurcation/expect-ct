@@ -116,6 +116,16 @@ The OPTIONAL `report-uri` directive indicates the URI to which the UA SHOULD
 report Expect-CT failures ({{expect-ct-compliance}}). The UA POSTs the reports
 to the given URI as described in {{reporting-expect-ct-failure}}.
 
+The `report-uri` directive is REQUIRED to have a directive value, for which the
+syntax is defined in {{reporturi-syntax}}.
+
+~~~
+report-uri-value = absolute-URI
+~~~
+{: #reporturi-syntax title="Syntax of the report-uri directive value"}
+
+`absolute-URI` is defined in Section 4.3 of RFC 3986 {{!RFC3986}}.
+
 Hosts may set `report-uri`s that use HTTP or HTTPS. If the scheme in the
 `report-uri` is one that uses TLS (e.g., HTTPS), UAs MUST check Expect-CT
 compliance when the host in the `report-uri` is an Expect-CT host; similarly,
