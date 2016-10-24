@@ -2,7 +2,7 @@
 title: "Expect-CT (better title TBD)"
 abbrev: "Expect-CT"
 docname: draft-stark-expect-ct.md
-category: std
+category: exp
 ipr: trust200902
 
 stand_alone: yes
