@@ -299,7 +299,7 @@ elements {{!W3C.REC-html401-19991224}} in received content.
 ## Noting Expect-CT
 
 Upon receipt of the Expect-CT response header field containing an `enforce`
-directive, the UA notes the host as an Expect-CT host, storing the host'st
+directive, the UA notes the host as an Expect-CT host, storing the host's
 domain name and its associated Expect-CT directives in non-volatile storage. The
 domain name and associated Expect-CT directives are collectively known as
 "Expect-CT metadata".
@@ -310,12 +310,12 @@ validation added in {{expect-ct-compliance}}, that included the `enforce`
 directive.
 
 To note a host as an Expect-CT host, the UA MUST set its Expect-CT metadata to
-the effectie expiration date and report-uri (if any) given in the most recently
+the effective expiration date and report-uri (if any) given in the most recently
 received valid Expect-CT header.
 
 For forward compatibility, the UA MUST ignore any unrecognized Expect-CT header
 directives, while still processing those directives it does
-recognize. {{response-header-field-syntax} specifies the directives `enforce`,
+recognize. {{response-header-field-syntax}} specifies the directives `enforce`,
 `max-age`, and `report-uri`, but future specifications and implementations might
 use additional directives.
 
