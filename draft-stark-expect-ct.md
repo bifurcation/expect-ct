@@ -227,17 +227,16 @@ If the header field includes a `report-uri` directive, and the connection
 does not comply with the UA's CT policy, then the UA MUST send a report to the
 specified `report-uri` as specified in {{reporting-expect-ct-failure}}.
 
-If the header field contains the `enforce` directive and the connection complies
-with the UA's CT policy, then the UA MUST either:
+If the header field contains the `enforce` directive and the connection complies with the UA's CT policy, then the UA MUST either:
 
 - Note the host as an Expect-CT host if it is not already so noted (see
   {{noting-expect-ct}}), or
-- Update the UA's cached information for the Expect-CT host if the `max-age`
-  header field value directive conveys information different from that already
-  maintained by the UA. If the `max-age` directive has a value of 0, the UA MUST
-  remove its cached Expect-CT information if the host was previously noted as an
-  Expect-CT host, and MUST NOT note this host as an Expect-CT host if it is not
-  already noted.
+- Update the UA's cached information for the Expect-CT host if the `max-age` or
+  `report-uri` header field value directives convey information different from
+  that already maintained by the UA. If the `max-age` directive has a value of
+  0, the UA MUST remove its cached Expect-CT information if the host was
+  previously noted as an Expect-CT host, and MUST NOT note this host as an
+  Expect-CT host if it is not already noted.
 
 If the header field contains the `enforce` directive and the connection does not
 comply with the UA's CT policy, then the UA MUST NOT note this host as an
