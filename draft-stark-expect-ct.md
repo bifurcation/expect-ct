@@ -33,8 +33,8 @@ accepted by UAs are discoverable in Certificate Transparency logs.
 # Introduction
 
 This document defines a new HTTP header that enables UAs to identify web hosts
-that expect the presence of Signed Certificate Timestamps (SCTs) in future
-Transport Layer Security (TLS) {{!RFC5246}} connections.
+that expect the presence of Signed Certificate Timestamps (SCTs) {{!RFC6962}} in
+future Transport Layer Security (TLS) {{!RFC5246}} connections.
 
 Web hosts that serve the Expect-CT HTTP header are noted by the UA as Expect-CT
 hosts. The UA evaluates each connection to an Expect-CT host for compliance with
@@ -342,26 +342,111 @@ If the UA does not evaluate CT compliance, e.g. because the user has elected to
 disable it, or because a presented certificate chain chains up to a user-defined
 trust anchor, UAs SHOULD NOT send Expect-CT reports.
 
-# Interactions with Preloaded Pin Lists
-
 # Reporting Expect-CT Failure
 
 When the UA receives an Expect-CT header with a `report-uri` directive that does
 not comply with the UA's CT policy, or when the UA connects to a noted Expect-CT
 host that does not comply with the CT policy, the UA SHOULD report Expect-CT
-failures to the configured `report-uri`. The UA does this by POSTing a JSON
-{{!RFC7159}} message to the URI. The JSON message takes this form:
+failures to the configured `report-uri`.
+
+## Generating a violation report
+
+To generate a violation report object, the UA constructs a JSON message of the
+following form:
 
 ~~~
 {
-FILL IN REPORT FORMAT HERE
+  "date-time": date-time,
+  "hostname": hostname,
+  "port": port,
+  "effective-expiration-date": expiration-date,
+  "served-certificate-chain": [ (MUST be in the order served)
+    pem1, ... pemN
+  ],
+  "validated-certificate-chain":
+    pem1, ... pemN
+  ],
+  "scts": [
+    sct1, ... sctN
+  ]
 }
 ~~~
+{: #violation-report-object title="JSON format of a violation report object"}
 
-Whitespace outside of quoted strings is not significant. The key/value pairs may
-appear in any order, but each MUST appear only once.
+Whitespace outside of quoted strings is not significant.  The key/value pairs
+may appear in any order, but each MUST appear only once.
 
-EXPLAIN report fields here
+The `date-time` indicates the time the UA observed the CT compliance failure.
+It is provided as a string formatted according to Section 5.6, "Internet
+Date/Time Format", of RFC 3339 {{!RFC3339}}.
+
+The `hostname` is the hostname to which the UA made the original request that
+failed the CT compliance check. It is provided as a string.
+
+The `port` is the port to which the UA made the original request that failed the
+CT compliance check. It is provided as an integer.
+
+The `effective-expiration-date` is the Effective Expiration Date for the
+Expect-CT host that failed the CT compliance check.  It is provided as a string
+formatted according to Section 5.6, "Internet Date/Time Format", of RFC 3339
+{{!RFC3339}}.
+
+The `served-certificate-chain` is the certificate chain, as served by the
+Expect-CT host during TLS session setup.  It is provided as an array of strings,
+which MUST appear in the order that the certificates were served; each string
+`pem1`, ... `pemN` is the Privacy-Enhanced Mail (PEM) representation of each
+X.509 certificate as described in RFC 7468 {{!RFC7468}}.
+
+The `validated-certificate-chain` is the certificate chain, as constructed by
+the UA during certificate chain verification. (This may differ from the
+`served-certificate-chain`.) It is provided as an array of strings, which MUST
+appear in the order matching the chain that the UA validated; each string
+`pem1`, ... `pemN` is the Privacy-Enhanced Mail (PEM) representation of each
+X.509 certificate as described in RFC 7468 {{!RFC7468}}.
+
+The `scts` are JSON messages representing the SCTs (if any) that the UA received
+for the Expect-CT host and their validation statuses. The format of `sct1`,
+... `sctN` is shown in {{sct-json-format}}. The SCTs may appear in any order.
+
+~~~
+{
+  "sct": sct,
+  "status": status,
+  "source": source
+}
+~~~
+{: #sct-json-format title="JSON format of an SCT object"}
+
+The `sct` is as defined in Section 4.1 of RFC 6962 {{!RFC6962}}.
+
+The `status` is a string that the UA MUST set to one of the following values:
+"unknown" (indicating that the UA does not have or does not trust the public key
+of the log from which the SCT was issued), "valid" (indicating that the UA
+successfully validated the SCT as described in Section 5.2 of {{!RFC6962}}), or
+"invalid" (indicating that the SCT validation failed because of, e.g., a bad
+signature).
+
+The `source` is a string that indicates from where the UA obtained the SCT, as
+defined in Section 3.3 of RFC 6962 {{!RFC6962}}. The UA MUST set `source` to one
+of the following values: "tls-extension", "ocsp", or "embedded".
+
+## Sending a violation report
+
+When an Expect-CT header field contains the `report-uri` directive, and the
+connection does not comply with the UA's CT policy, the UA SHOULD report the
+failure as follows:
+
+1. Prepare a JSON object `report object` with the single key `expect-ct-report`,
+   whose value is the result of generating a violation report object as
+   described in {{violation-report-object}}.
+2. Let `report body` by the JSON stringification of `report object`.
+3. Let `report-uri` be the value of the `report-uri` directive in the Expect-CT
+   header field.
+3. [Queue a task](https://html.spec.whatwg.org/#queue-a-task) to
+   [fetch](https://fetch.spec.whatwg.org/#fetching) `report-uri`, with the
+   synchronous flag not set, using HTTP method `POST`, with a `Content-Type`
+   header field of `application/expect-ct-report`, and an entity body consisting
+   of `report body`.
 
 # Security Considerations
 
