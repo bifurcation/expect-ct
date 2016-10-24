@@ -334,10 +334,6 @@ according to local policy. For example, a UA may disable CT compliance checks
 for hosts whose validated certificate chain terminates at a user-defined trust
 anchor, rather than a trust anchor built-in to the UA (or underlying platform).
 
-SOMETHING SOMETHING about the UA getting to choose the policy based on the
-SCTs. Example policies in an appendix? Something advising UAs to publish their
-policies somewhere? Something about using reporting to discover policy changes?
-
 A UA that has previously noted a host as an Expect-CT host MUST evaluate
 evaluate CT compliance when setting up the TLS session, before beginning an HTTP
 conversation over the TLS channel.
