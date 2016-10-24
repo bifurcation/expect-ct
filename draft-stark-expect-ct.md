@@ -1,5 +1,5 @@
 ---
-title: "Expect-CT (better title TBD)"
+title: "Expect-CT"
 abbrev: "Expect-CT"
 docname: draft-stark-expect-ct.md
 category: exp
@@ -17,15 +17,24 @@ author:
 
 --- abstract
 
-TODO: Wite an abstract here
+This document defines a new HTTP header, named Expect-CT, that allows web host
+operators to instruct user agents to expect valid Signed Certificate Timestamps
+(SCTs) to be served on connections to these hosts. When configured in
+enforcement mode, user agents (UAs) will remember that hosts expect SCTs and
+will refuse connections that do not conform to the UA's Certificate Transparency
+policy. When configured in report-only mode, UAs will report the lack of valid
+SCTs to a URI configured by the host, but will allow the connection. By turning
+on Expect-CT, web host operators can discover misconfigurations in their
+Certificate Transparency deployments and ensure that misissued certificates
+accepted by UAs are discoverable in Certificate Transparency logs.
 
 --- middle
 
 # Introduction
 
 This document defines a new HTTP header that enables UAs to identify web hosts
-that wish to require the presence of Signed Certificate Timestamps (SCTs) in
-future Transport Layer Security (TLS) {{!RFC5246}} connections.
+that expect the presence of Signed Certificate Timestamps (SCTs) in future
+Transport Layer Security (TLS) {{!RFC5246}} connections.
 
 Web hosts that serve the Expect-CT HTTP header are noted by the UA as Expect-CT
 hosts. The UA evaluates each connection to an Expect-CT host for compliance with
@@ -34,14 +43,25 @@ policy, the UA sends a report to a URI configured by the Expect-CT host and/or
 fails the connection, depending on the configuration that the Expect-CT host has
 chosen.
 
-Deploying safely with reporting and gradually increasing max-age. Risk of UAs
-changing policies, servers should use reporting to discover.
+If misconfigured, Expect-CT can cause unwanted connection failures (for example,
+if a host deploys Expect-CT but then switches to a legitimate certificate that
+is not logged in Certificate Transparency logs). Web host operators are advised
+to deploy Expect-CT with caution, by using the reporting feature and gradually
+increasing the interval for the UA remembers the host as an Expect-CT
+host. These precautions can help web host operators gain confidence that their
+Expect-CT deployment is not causing unwanted connection failures.
 
-Meant to be used with HSTS but they can be used separately.
-
-Expect-CT is a trust-on-first-use (TOFU) mechanism etc etc
+Expect-CT is a trust-on-first-use (TOFU) mechanism. The first time a UA connects
+to a host, it lacks the information necessary to require SCTs for the
+connection. Thus, the UA will not be able to detect and thwart an attack on the
+UA's first connection to the host. Still, Expect-CT provides value by allowing
+UAs to detect the use of unlogged certificates after the initial communication.
 
 ## Requirements Language
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in RFC 2119 {{!RFC2119}}.
 
 # Server and Client Behavior
 
