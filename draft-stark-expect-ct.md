@@ -72,7 +72,9 @@ specification. It is used by a server to indicate that UAs should evaluate
 connections to the host emitting the header for CT compliance
 ({{expect-ct-compliance}}).
 
-(I don't know how to do fancy ABNF figures.)
+Figure 1 describes the syntax (Augmented Backus-Naur Form) of the header field,
+using the grammar defined in RFC 5234 {{!RFC5234}} and the rules defined in
+Section 3.2 of RFC 7230 {{!RFC7230}}.
 
 ~~~
 Expect-CT-Directives = directive *( OWS ";" OWS directive )
@@ -80,6 +82,11 @@ directive            = directive-name [ "=" directive-value ]
 directive-name       = token
 directive-value      = token / quoted-string
 ~~~
+{: #figops title="Syntax of the Expect-CT header field"}
+
+Optional white space (`OWS`) is used as defined in Section 3.2.3 of RFC 7230
+{{!RFC7230}}. `token` and `quoted-string` are used as defined in Section 3.2.6
+of RFC 7230 {{!RFC7230}}.
 
 The directives defined in this specification are described below. The overall
 requirements for directives are:
