@@ -72,7 +72,7 @@ specification. It is used by a server to indicate that UAs should evaluate
 connections to the host emitting the header for CT compliance
 ({{expect-ct-compliance}}).
 
-Figure 1 describes the syntax (Augmented Backus-Naur Form) of the header field,
+{{expect-ct-syntax}} describes the syntax (Augmented Backus-Naur Form) of the header field,
 using the grammar defined in RFC 5234 {{!RFC5234}} and the rules defined in
 Section 3.2 of RFC 7230 {{!RFC7230}}.
 
@@ -82,7 +82,7 @@ directive            = directive-name [ "=" directive-value ]
 directive-name       = token
 directive-value      = token / quoted-string
 ~~~
-{: #figops title="Syntax of the Expect-CT header field"}
+{: #expect-ct-syntax title="Syntax of the Expect-CT header field"}
 
 Optional white space (`OWS`) is used as defined in Section 3.2.3 of RFC 7230
 {{!RFC7230}}. `token` and `quoted-string` are used as defined in Section 3.2.6
@@ -155,7 +155,17 @@ is meaningless if no `enforce` directive is present (i.e., if the Expect-CT
 policy is report-only). UAs MUST ignore the `max-age` directive if the `enforce`
 directive is not present and not cache the header.
 
-(syntax of max-age goes here)
+The `max-age` directive is REQUIRED to have a directive value, for which the
+syntax (after quoted-string unescaping, if necessary) is defined in
+{{maxage-syntax}}.
+
+~~~
+max-age-value = delta-seconds
+delta-seconds = 1*DIGIT
+~~~
+{: #maxage-syntax title="Syntax of the max-age directive value"}
+
+`delta-seconds` is used as defined in Section 1.2.1 of RFC 7234 {{!RFC7234}}.
 
 ## Server Processing Model
 
