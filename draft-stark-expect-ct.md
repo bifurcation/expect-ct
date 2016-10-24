@@ -45,11 +45,13 @@ chosen.
 
 If misconfigured, Expect-CT can cause unwanted connection failures (for example,
 if a host deploys Expect-CT but then switches to a legitimate certificate that
-is not logged in Certificate Transparency logs). Web host operators are advised
-to deploy Expect-CT with caution, by using the reporting feature and gradually
-increasing the interval for the UA remembers the host as an Expect-CT
-host. These precautions can help web host operators gain confidence that their
-Expect-CT deployment is not causing unwanted connection failures.
+is not logged in Certificate Transparency logs, or if a web host operator
+believes their certificate to conform to all UAs' CT policies but is
+mistaken). Web host operators are advised to deploy Expect-CT with caution, by
+using the reporting feature and gradually increasing the interval for the UA
+remembers the host as an Expect-CT host. These precautions can help web host
+operators gain confidence that their Expect-CT deployment is not causing
+unwanted connection failures.
 
 Expect-CT is a trust-on-first-use (TOFU) mechanism. The first time a UA connects
 to a host, it lacks the information necessary to require SCTs for the
