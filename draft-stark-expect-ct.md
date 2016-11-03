@@ -305,7 +305,7 @@ domain name and associated Expect-CT directives are collectively known as
 "Expect-CT metadata".
 
 The UA MUST note a host as an Expect-CT host if and only if it received the
-Expect-CT response header field over an error-free TLS connection, inluding the
+Expect-CT response header field over an error-free TLS connection, including the
 validation added in {{expect-ct-compliance}}, that included the `enforce`
 directive.
 
