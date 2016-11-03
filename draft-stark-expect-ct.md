@@ -48,7 +48,7 @@ if a host deploys Expect-CT but then switches to a legitimate certificate that
 is not logged in Certificate Transparency logs, or if a web host operator
 believes their certificate to conform to all UAs' CT policies but is
 mistaken). Web host operators are advised to deploy Expect-CT with caution, by
-using the reporting feature and gradually increasing the interval for the UA
+using the reporting feature and gradually increasing the interval where the UA
 remembers the host as an Expect-CT host. These precautions can help web host
 operators gain confidence that their Expect-CT deployment is not causing
 unwanted connection failures.
@@ -56,8 +56,10 @@ unwanted connection failures.
 Expect-CT is a trust-on-first-use (TOFU) mechanism. The first time a UA connects
 to a host, it lacks the information necessary to require SCTs for the
 connection. Thus, the UA will not be able to detect and thwart an attack on the
-UA's first connection to the host. Still, Expect-CT provides value by allowing
-UAs to detect the use of unlogged certificates after the initial communication.
+UA's first connection to the host. Still, Expect-CT provides value by 1) allowing
+UAs to detect the use of unlogged certificates after the initial communication,
+and 2) allowing web hosts to be confident that UAs are only trusting publicly-
+auditable certificates.
 
 ## Requirements Language
 
