@@ -365,7 +365,7 @@ following form:
   "served-certificate-chain": [ (MUST be in the order served)
     pem1, ... pemN
   ],
-  "validated-certificate-chain": [ (MUST be in the order served)
+  "validated-certificate-chain": [
     pem1, ... pemN
   ],
   "scts": [
