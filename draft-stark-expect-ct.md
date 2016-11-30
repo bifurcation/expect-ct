@@ -155,7 +155,11 @@ unnecessary to send the same report to the same `report-uri` more than once.
 The OPTIONAL `enforce` directive is a valueless directive that, if present
 (i.e., it is "asserted"), signals to the UA that compliance to the CT policy
 should be enforced (rather than report-only) and that the UA should refuse
-future connections that violate its CT policy.
+future connections that violate its CT policy. When both the `enforce` directive
+and `report-uri` directive (as defined in {{reporturi-syntax}}) are present, the
+policy is referred to as an "enforce-and-report" policy, signalling to the UA
+both that compliance to the CT policy should be enforced and that violations
+should be reported.
 
 ### The max-age Directive
 
