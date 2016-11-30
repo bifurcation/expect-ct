@@ -1,5 +1,5 @@
 ---
-title: "Expect-CT"
+title: "Expect-CT Extension for HTTP"
 abbrev: "Expect-CT"
 docname: draft-stark-expect-ct.md
 category: exp
