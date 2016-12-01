@@ -214,13 +214,8 @@ the Expect-CT header field during which the UA SHOULD regard the host from whom
 the message was received as a Known Expect-CT Host.
 
 The `max-age` directive is REQUIRED to be present within an "Expect-CT" header
-field if and only if the `enforce` directive is present. The `max-age` directive
-is meaningless if no `enforce` directive is present (i.e., if the Expect-CT
-policy is report-only). UAs MUST ignore the `max-age` directive if the `enforce`
-directive is not present and not cache the header.
-
-The `max-age` directive is REQUIRED to have a directive value, for which the
-syntax (after quoted-string unescaping, if necessary) is defined in
+field. The `max-age` directive is REQUIRED to have a directive value, for which
+the syntax (after quoted-string unescaping, if necessary) is defined in
 {{maxage-syntax}}.
 
 ~~~
@@ -276,27 +271,26 @@ Expect-CT header field conforming to the grammar specified in
 the header was received for compliance with the UA's CT Policy, and then process
 the Expect-CT header field as follows.
 
-If the header field includes a `report-uri` directive, and the connection does
-not comply with the UA's CT Policy (i.e. the connection is not CT-qualified),
-then the UA MUST send a report to the specified `report-uri` as specified in
-{{reporting-expect-ct-failure}}.
-
-If the header field contains the `enforce` directive and the connection complies
-with the UA's CT Policy (i.e. the connection is CT-qualified), then the UA MUST
-either:
+If the connection complies with the UA's CT Policy (i.e. the connection is
+CT-qualified), then the UA MUST either:
 
 - Note the host as a Known Expect-CT Host if it is not already so noted (see
   {{noting-expect-ct}}), or
 - Update the UA's cached information for the Known Expect-CT Host if the
-  `max-age` or `report-uri` header field value directives convey information
-  different from that already maintained by the UA. If the `max-age` directive
-  has a value of 0, the UA MUST remove its cached Expect-CT information if the
-  host was previously noted as a Known Expect-CT Host, and MUST NOT note this
-  host as a Known Expect-CT Host if it is not already noted.
+  `enforce`, `max-age`, or `report-uri` header field value directives convey
+  information different from that already maintained by the UA. If the `max-age`
+  directive has a value of 0, the UA MUST remove its cached Expect-CT
+  information if the host was previously noted as a Known Expect-CT Host, and
+  MUST NOT note this host as a Known Expect-CT Host if it is not already noted.
 
-If the header field contains the `enforce` directive and the connection does not
-comply with the UA's CT Policy (i.e. is not CT-qualified), then the UA MUST NOT
-note this host as a Known Expect-CT Host.
+If the connection does not comply with the UA's CT Policy (i.e. is not
+CT-qualified), then the UA MUST NOT note this host as a Known Expect-CT Host.
+
+If the header field includes a `report-uri` directive, and the connection does
+not comply with the UA's CT Policy (i.e. the connection is not CT-qualified),
+and the UA has not already sent an Expect-CT report for this connection, then
+the UA SHOULD send a report to the specified `report-uri` as specified in
+{{reporting-expect-ct-failure}}.
 
 If a UA receives more than one Expect-CT header field in an HTTP response
 message over secure transport, then the UA MUST process only the first Expect-CT
@@ -307,7 +301,7 @@ specified in {{response-header-field-syntax}}.
 
 ### Noting an Expect-CT Host - Storage Model
 
-The "effective Expect-CT date" of an Expect-CT Host is the time that the UA
+The "effective Expect-CT date" of a Known Expect-CT Host is the time that the UA
 observed a valid Expect-CT header for the host. The "effective expiration date"
 of a Known Expect-CT Host is the effective Expect-CT date plus the max-age. An
 Expect-CT Host is "expired" if the effective expiration date refers to a date in
@@ -325,6 +319,7 @@ Expect-CT Host's domain name, per the matching procedure specified in Section
 cache. The UA caches:
 
 - the Expect-CT Host's domain name,
+- whether the `enforce` directive is present
 - the effective expiration date, or enough information to calculate it (the
   effective Expect-CT date and the value of the `max-age` directive),
 - the value of the `report-uri` directive, if present.
@@ -343,10 +338,6 @@ header, the UA MAY behave as if the max-age were effectively 60 days. (One way
 to achieve this behavior is for the UA to simply store a value of 60 days
 instead of the 90-day value provided by the Expect-CT host.)
 
-The UA MUST NOT cache information from an Expect-CT header that does not include
-the `enforce` directive. (Report-only headers are useful only at the time of
-receipt and processing.)
-
 ### HTTP-Equiv \<meta\> Element Attribute
 
 UAs MUST NOT heed `http-equiv="Expect-CT"` attribute settings on `<meta>`
@@ -354,20 +345,17 @@ elements {{!W3C.REC-html401-19991224}} in received content.
 
 ## Noting Expect-CT
 
-Upon receipt of the Expect-CT response header field containing an `enforce`
-directive, the UA notes the host as a Known Expect-CT Host, storing the host's
-domain name and its associated Expect-CT directives in non-volatile storage. The
-domain name and associated Expect-CT directives are collectively known as
-"Expect-CT metadata".
+Upon receipt of the Expect-CT response header field, the UA notes the host as a
+Known Expect-CT Host, storing the host's domain name and its associated
+Expect-CT directives in non-volatile storage. The domain name and associated
+Expect-CT directives are collectively known as "Expect-CT metadata".
 
 The UA MUST note a host as a Known Expect-CT Host if and only if it received the
 Expect-CT response header field over an error-free TLS connection, including the
-validation added in {{expect-ct-compliance}}, that included the `enforce`
-directive.
+validation added in {{expect-ct-compliance}}.
 
 To note a host as a Known Expect-CT Host, the UA MUST set its Expect-CT metadata
-to the effective expiration date and report-uri (if any) given in the most
-recently received valid Expect-CT header.
+given in the most recently received valid Expect-CT header.
 
 For forward compatibility, the UA MUST ignore any unrecognized Expect-CT header
 directives, while still processing those directives it does
@@ -390,6 +378,15 @@ according to local policy. For example, a UA may disable CT compliance checks
 for hosts whose validated certificate chain terminates at a user-defined trust
 anchor, rather than a trust anchor built-in to the UA (or underlying platform).
 
+If a connection to a Known CT Host violates the UA's CT policy (i.e. the
+connection is not CT-qualified), and if the Known Expect-CT Host's Expect-CT
+metadata indicates an `enforce` configuration, the UA MUST treat the CT
+compliance failure as a non-recoverable error.
+
+If a connection to a Known CT Host violates the UA's CT policy, and if the Known
+Expect-CT Host's Expect-CT metadata includes a `report-uri`, the UA SHOULD send
+an Expect-CT report to that `report-uri` ({{reporting-expect-ct-failure}}).
+
 A UA that has previously noted a host as a Known Expect-CT Host MUST evaluate CT
 compliance when setting up the TLS session, before beginning an HTTP
 conversation over the TLS channel.
@@ -400,10 +397,14 @@ trust anchor, UAs SHOULD NOT send Expect-CT reports.
 
 # Reporting Expect-CT Failure
 
-When the UA receives an Expect-CT header with a `report-uri` directive that does
-not comply with the UA's CT Policy, or when the UA connects to a Known Expect-CT
-Host that does not comply with the CT Policy, the UA SHOULD report Expect-CT
-failures to the configured `report-uri`.
+When the UA attempts to connect to a Known Expect-CT Host and the connection is
+not CT-qualified, the UA SHOULD report Expect-CT failures to the `report-uri`,
+if any, in the Known Expect-CT Host's Expect-CT metadata.
+
+When the UA receives an Expect-CT response header field over a connection that
+is not CT-qualified, if the UA has not already sent an Expect-CT report for this
+connection, then the UA SHOULD report Expect-CT failures to the configured
+`report-uri`, if any.
 
 ## Generating a violation report
 
@@ -489,8 +490,9 @@ of the following values: "tls-extension", "ocsp", or "embedded".
 ## Sending a violation report
 
 When an Expect-CT header field contains the `report-uri` directive, and the
-connection does not comply with the UA's CT Policy, the UA SHOULD report the
-failure as follows:
+connection does not comply with the UA's CT Policy, or when the UA connects to a
+Known Expect-CT Host with Expect-CT metadata that contains a `report-uri`, the
+UA SHOULD report the failure as follows:
 
 1. Prepare a JSON object `report object` with the single key `expect-ct-report`,
    whose value is the result of generating a violation report object as
