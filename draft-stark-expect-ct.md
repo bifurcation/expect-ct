@@ -484,7 +484,7 @@ successfully validated the SCT as described in Section 5.2 of {{!RFC6962}}), or
 signature).
 
 The `source` is a string that indicates from where the UA obtained the SCT, as
-defined in Section 3.3 of RFC 6962 {{!RFC6962}}. The UA MUST set `source` to one
+defined in Section 3.3 of {{!RFC6962}}. The UA MUST set `source` to one
 of the following values: "tls-extension", "ocsp", or "embedded".
 
 ## Sending a violation report
@@ -508,19 +508,82 @@ UA SHOULD report the failure as follows:
 
 # Security Considerations
 
+When UAs support the Expect-CT header, it becomes a potential vector for hostile
+header attacks against site owners. If a site owner uses a certificate issued by
+a certificate authority which does not embed SCTs nor serve SCTs via OCSP or TLS
+extension, a malicious server operator or attacker could temporarily reconfigure
+the host to comply with the UA's CT policy, and add the Expect-CT header in
+enforcing mode with a long `max-age`.  Implementing user agents would note this
+as an Expect-CT Host (see  {{noting-expect-ct}}). After having done this, the
+configuration could then be reverted to not comply with the CT policy, prompting
+failures. Note this scenario would require the attacker to have substantial
+control over the infrastructure in question, being able to obtain different
+certificates, change server software, or act as a man-in-the-middle in
+connections.
+
+Site operators could themselves only cure this situation by one of:
+reconfiguring their web server to transmit SCTs using the TLS extension defined
+in Section 3.3 of {{!RFC6962}}, obtaining a certificate from an alternative
+certificate authority which provides SCTs by one of the other methods, or by
+waiting for the user agents' persisted notation of this as an Expect-CT host to
+reach its `max-age`. User agents may choose to implement mechanisms for users to
+cure this situation, as noted in {{usability-considerations}}.
+
 ## Maximum max-age
 
-1 year?
+There is a security trade-off in that low maximum values provide a narrow window
+of protection for users that visit the Known Expect-CT Host only infrequently,
+while high maximum values might result in a denial of service to a UA in the
+event of a hostile header attack, or simply an error on the part of the
+site-owner.
+
+There is probably no ideal maximum for the `max-age` directive. Since Expect-CT
+is primarily a policy-expansion and investigation technology rather than an
+end-user protection, a value on the order of 30 days (2,592,000 seconds) may be
+considered a balance between these competing security concerns.
+
+## Avoiding amplification attacks
+
+Another kind of hostile header attack uses the `report-uri` mechanism on many
+hosts not currently exposing SCTs as a method to cause a denial-of-service to
+the host receiving the reports. If some highly-trafficked websites emitted
+a non-enforcing Expect-CT header with a `report-uri`, implementing UAs' reports
+could flood the reporting host. It is noted in {{the-report-uri-directive}} that UAs
+should limit the rate at which they emit reports, but an attacker may alter the
+Expect-CT header's fields to induce UAs to submit different reports to different
+URIs to still cause the same effect.
 
 # Privacy Considerations
 
+Expect-CT can be used to infer what Certificate Transparency policy is in use,
+by attempting to retrieve specially-configured websites which pass one user
+agents' policies but not another's. Note that this consideration is true of UAs
+which enforce CT policies without Expect-CT as well.
+
+Additionally, reports submitted to the `report-uri` could reveal information to
+a third party about which webpage is being accessed and by which IP address, by
+using individual `report-uri` values for individually-tracked pages. This
+information could be leaked even if client-side scripting were disabled.
+
+Implementations must store state about Known Expect-CT Hosts, and hence which
+domains the UA has contacted.
+
+Violation reports, as noted in {{reporting-expect-ct-failure}}, contain
+information about the certificate chain that has violated the CT policy. In some
+cases, such as organization-wide compromise of the end-to-end security of TLS,
+this may include information about the interception tools and design used by the
+organization that the organization would otherwise prefer not be disclosed.
+
+Because Expect-CT causes remotely-detectable behavior, it's advisable that UAs
+offer a way for privacy-sensitive users to clear currently noted Expect-CT
+hosts, and allow users to query the current state of Known Expect-CT Hosts.
+
 # IANA Considerations
+
+TBD
 
 # Usability Considerations
 
 When the UA detects a Known Expect-CT Host in violation of the UA's CT Policy,
 users will experience denials of service. It is advisable for UAs to explain the
 reason why.
-
-It is advisable that UAs have a way for users to clear Known Expect-CT Hosts and
-that UAs allow users to query Known Expect-CT Hosts.

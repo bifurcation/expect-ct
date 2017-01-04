@@ -1,9 +1,9 @@
-# This is Where a Title Will Be Someday
+# Expect-CT Extension for HTTP
 
-This is the working area for the Individual internet-draft, "This is Where a Title Will Be Someday".
+This is the working area for the Individual internet-draft, "Expect-CT Extension for HTTP".
 
 * [Editor's copy](https://bifurcation.github.io/expect-ct/)
-* [Individual Draft] (https://tools.ietf.org/html/draft-stark-expect-ct)
+* [Individual Draft](https://tools.ietf.org/html/draft-stark-expect-ct)
 
 
 ## Building the Draft
@@ -22,8 +22,8 @@ instructions](https://github.com/martinthomson/i-d-template/blob/master/doc/SETU
 
 Before submitting feedback, please familiarize yourself with our current issues
 list and review the [working group
-documents](https://datatracker.ietf.org/wg/expect/documents/) and [mailing
-list discussion](https://mailarchive.ietf.org/arch/browse/expect/). If you're
+documents](https://datatracker.ietf.org/doc/draft-stark-expect-ct/) and [mailing
+list discussion](https://lists.w3.org/Archives/Public/ietf-http-wg/). If you're
 new to this, you may also want to read the [Tao of the
 IETF](https://www.ietf.org/tao.html).
 
@@ -32,7 +32,7 @@ terms outlined below.
 
 1. The best way to provide feedback (editorial or design) and ask questions is
 sending an e-mail to our mailing list
-([info](https://www.ietf.org/mailman/listinfo/expect)). This will ensure that
+([ietf-http-wg](https://lists.w3.org/Archives/Public/ietf-http-wg/)). This will ensure that
 the entire Working Group sees your input in a timely fashion.
 
 2. If you have **editorial** suggestions (i.e., those that do not change the
