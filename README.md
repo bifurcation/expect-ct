@@ -1,3 +1,9 @@
+# NOTE
+
+This spec has now been moved to the IETF http-extensions repository:
+https://github.com/httpwg/http-extensions. Please file issues there with the
+'expect-ct' label.
+
 # Expect-CT Extension for HTTP
 
 This is the working area for the Individual internet-draft, "Expect-CT Extension for HTTP".
