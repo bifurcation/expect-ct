@@ -329,14 +329,14 @@ present in the Expect-CT header, and the UA understands them, the UA MAY note
 them as well.
 
 UAs MAY set an upper limit on the value of max-age, so that UAs that have noted
-erroneous Expect-CT hosts (whether by accident or due to attack) have some
+an erroneous Expect-CT Host (whether by accident or due to attack) have some
 chance of recovering over time.  If the server sets a max-age greater than the
 UA's upper limit, the UA MAY behave as if the server set the max-age to the UA's
 upper limit.  For example, if the UA caps max-age at 5,184,000 seconds (60
-days), and a Pinned Host sets a max- age directive of 90 days in its Expect-CT
+days), and an Expect-CT Host sets a max-age directive of 90 days in its Expect-CT
 header, the UA MAY behave as if the max-age were effectively 60 days. (One way
 to achieve this behavior is for the UA to simply store a value of 60 days
-instead of the 90-day value provided by the Expect-CT host.)
+instead of the 90-day value provided by the Expect-CT Host.)
 
 ### HTTP-Equiv \<meta\> Element Attribute
 
